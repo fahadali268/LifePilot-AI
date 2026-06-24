@@ -1,0 +1,8 @@
+{
+  "name": "LifePilot AI",
+  "description": "An AI-powered productivity copilot that analyzes deadline risk, prioritizes automatically, generates smart plans, and coaches you to keep tasks on track.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
