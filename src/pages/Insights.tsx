@@ -67,8 +67,8 @@ export default function Insights({ tasks }: InsightsProps) {
       {/* Main stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Productivity Score card */}
-        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+        <div className="bg-[#09090B] border border-[#27272A] rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#27272A]/60 pb-3">
             <div className="flex items-center space-x-2 text-indigo-400 text-xs font-semibold font-mono uppercase">
               <Gauge className="w-4 h-4" />
               <span>Productivity Score</span>
@@ -85,7 +85,7 @@ export default function Insights({ tasks }: InsightsProps) {
             {/* Custom ring rating gauge */}
             <div className="relative w-20 h-20 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90">
-                <circle cx="40" cy="40" r="32" className="stroke-slate-800 fill-none" strokeWidth="6" />
+                <circle cx="40" cy="40" r="32" className="stroke-[#27272A] fill-none" strokeWidth="6" />
                 <circle 
                   cx="40" 
                   cy="40" 
@@ -107,8 +107,8 @@ export default function Insights({ tasks }: InsightsProps) {
         </div>
 
         {/* Task Completion Rate card */}
-        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+        <div className="bg-[#09090B] border border-[#27272A] rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#27272A]/60 pb-3">
             <div className="flex items-center space-x-2 text-emerald-400 text-xs font-semibold font-mono uppercase">
               <Percent className="w-4 h-4" />
               <span>Completion Rate</span>
@@ -124,7 +124,7 @@ export default function Insights({ tasks }: InsightsProps) {
             
             <div className="relative w-20 h-20 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90">
-                <circle cx="40" cy="40" r="32" className="stroke-slate-800 fill-none" strokeWidth="6" />
+                <circle cx="40" cy="40" r="32" className="stroke-[#27272A] fill-none" strokeWidth="6" />
                 <circle 
                   cx="40" 
                   cy="40" 
@@ -146,8 +146,8 @@ export default function Insights({ tasks }: InsightsProps) {
         </div>
 
         {/* Queue Density card */}
-        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-slate-800/60 pb-3">
+        <div className="bg-[#09090B] border border-[#27272A] rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#27272A]/60 pb-3">
             <div className="flex items-center space-x-2 text-rose-400 text-xs font-semibold font-mono uppercase">
               <Hourglass className="w-4 h-4" />
               <span>Registry Backlog</span>
@@ -160,7 +160,7 @@ export default function Insights({ tasks }: InsightsProps) {
               <span className="text-4xl font-display font-bold text-white">{pending}</span>
               <span className="text-xs text-slate-400 font-mono">tasks pending</span>
             </div>
-            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
               <div 
                 className="bg-rose-500 h-full rounded-full transition-all" 
                 style={{ width: `${total > 0 ? (pending / total) * 100 : 0}%` }}
@@ -177,7 +177,7 @@ export default function Insights({ tasks }: InsightsProps) {
       {/* Analytics Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Area progress trends */}
-        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#09090B] border border-[#27272A] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-semibold text-slate-100">Milestone Acceleration</h3>
@@ -200,11 +200,11 @@ export default function Insights({ tasks }: InsightsProps) {
                       <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="day" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
+                  <XAxis dataKey="day" stroke="#71717A" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#71717A" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: '#18181B', borderColor: '#27272A', borderRadius: '8px' }}
                     labelClassName="text-slate-200 font-semibold text-xs"
                   />
                   <Area type="monotone" dataKey="Completed" stroke="#10b981" fillOpacity={1} fill="url(#colorCompleted)" strokeWidth={2} />
@@ -220,7 +220,7 @@ export default function Insights({ tasks }: InsightsProps) {
         </div>
 
         {/* Index Comparisons */}
-        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6">
+        <div className="bg-[#09090B] border border-[#27272A] rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-semibold text-slate-100">Performance Index Compare</h3>
@@ -233,11 +233,11 @@ export default function Insights({ tasks }: InsightsProps) {
             {total > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={speedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
+                  <XAxis dataKey="name" stroke="#71717A" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#71717A" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px' }}
+                    contentStyle={{ backgroundColor: '#18181B', borderColor: '#27272A', borderRadius: '8px' }}
                     labelClassName="text-slate-200 font-semibold text-xs"
                   />
                   <Bar dataKey="value" name="Score %" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={44} />

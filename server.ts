@@ -46,6 +46,39 @@ const cleanJSON = (text: string): string => {
   return cleaned.trim();
 };
 
+// Resilient content generation helper with model fallback and retries
+async function generateContentWithRetry(
+  contents: any,
+  systemInstruction?: string
+): Promise<string> {
+  const ai = getGeminiClient();
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-2.5-flash'];
+  let lastError: any = null;
+
+  for (const model of modelsToTry) {
+    let attempts = 0;
+    while (attempts < 2) {
+      try {
+        console.log(`[Gemini API] Requesting ${model} (attempt ${attempts + 1})...`);
+        const response = await ai.models.generateContent({
+          model: model,
+          contents: contents,
+          config: systemInstruction ? { systemInstruction } : undefined,
+        });
+        if (response && response.text) {
+          return response.text;
+        }
+      } catch (err: any) {
+        attempts++;
+        lastError = err;
+        console.warn(`[Gemini API] ${model} attempt ${attempts} failed:`, err?.message || err);
+      }
+    }
+  }
+
+  throw lastError || new Error('All Gemini API generation attempts failed.');
+}
+
 // 1. Task analysis API endpoint
 app.post('/api/analyze', async (req, res) => {
   const { tasks } = req.body;
@@ -54,7 +87,6 @@ app.post('/api/analyze', async (req, res) => {
   }
 
   try {
-    const ai = getGeminiClient();
     const prompt = `Analyze these tasks for risk, deadline conflicts, and priority.
 Return ONLY a valid JSON object matching this TypeScript interface. Do NOT include markdown code blocks, formatting, or conversational text. Return just the JSON:
 
@@ -74,12 +106,7 @@ interface AIAnalysis {
 Here are the user's tasks:
 ${JSON.stringify(tasks, null, 2)}`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: prompt,
-    });
-
-    const responseText = response.text || '';
+    const responseText = await generateContentWithRetry(prompt);
     const cleanedJson = cleanJSON(responseText);
     
     try {
@@ -153,7 +180,6 @@ app.post('/api/plan', async (req, res) => {
   }
 
   try {
-    const ai = getGeminiClient();
     const prompt = `Generate a highly optimized, actionable daily schedule structured into Morning, Afternoon, Evening, and Night segments.
 Map the user's active tasks to the schedule logically based on deadlines, effort hours, and priority. Ensure breaks, reviews, or mindfulness exercises are integrated as filler slots if there are empty intervals.
 
@@ -176,12 +202,7 @@ interface SmartPlan {
 User Tasks:
 ${JSON.stringify(tasks, null, 2)}`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: prompt,
-    });
-
-    const responseText = response.text || '';
+    const responseText = await generateContentWithRetry(prompt);
     const cleanedJson = cleanJSON(responseText);
     
     try {
@@ -269,62 +290,55 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  try {
-    const ai = getGeminiClient();
-    
-    // Create system instructions for conversational coach
-    const systemInstruction = `You are LifePilot AI, a brilliant Staff Productivity Engineer and elite Executive Performance Coach.
+  // 1. Prepare system instruction with the real active tasks context
+  const systemInstruction = `You are LifePilot AI, a brilliant Staff Productivity Engineer and elite Executive Performance Coach.
 Your tone is encouraging, objective, energetic, and completely focused on smart task execution.
-You hate default productivity advice (e.g., "just work harder"). Instead, analyze deadline clusters, workload fatigue, and estimate gaps.
+You hate generic, cliché productivity advice. Instead, analyze real deadline clusters, workload fatigue, and estimate gaps.
 Always offer structured, actionable strategies. Recommend tasks by name from the user's workspace list when relevant.
 
-Here is the user's active task list from Firestore:
-${JSON.stringify(tasks, null, 2)}
+Here is the user's active task registry containing deadlines, priorities, and completion status:
+${JSON.stringify(tasks || [], null, 2)}
 
-Provide helpful Markdown responses. Keep answers relatively concise and highly punchy.`;
+Provide helpful, structured Markdown responses. Keep answers concise, actionable, and punchy.`;
 
-    // Construct contents array with chat history
-    const contents: any[] = [];
-    
-    // Append context and system instructions inside the chat prompt
+  // 2. Build contents array representing conversation history
+  const contents: any[] = [];
+  
+  if (history && Array.isArray(history)) {
+    history.forEach((msg: any) => {
+      const role = msg.sender === 'assistant' ? 'model' : 'user';
+      contents.push({
+        role: role,
+        parts: [{ text: msg.text }]
+      });
+    });
+
+    // Verify if the current user message is already the last message in history
+    const lastHistoryMsg = history.length > 0 ? history[history.length - 1] : null;
+    const isCurrentMsgInHistory = lastHistoryMsg && lastHistoryMsg.text === message;
+    if (!isCurrentMsgInHistory) {
+      contents.push({
+        role: 'user',
+        parts: [{ text: message }]
+      });
+    }
+  } else {
     contents.push({
       role: 'user',
-      parts: [{ text: `${systemInstruction}\n\nUser Message: ${message}` }]
+      parts: [{ text: message }]
     });
+  }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash',
-      contents: contents,
-    });
-
+  // 3. Request generation from Gemini with fallback and retries
+  try {
+    const responseText = await generateContentWithRetry(contents, systemInstruction);
     return res.json({
-      text: response.text || "I'm listening, but I had an issue generating a response. Tell me more about your workspace setup."
+      text: responseText
     });
-
-  } catch (error: any) {
-    console.warn('Using simulation fallback for chat endpoint due to:', error.message || error);
-    
-    // Handle mock conversations realistically
-    const text = message.toLowerCase();
-    let reply = "";
-
-    if (text.includes('hello') || text.includes('hi')) {
-      reply = `Hello! I'm your **LifePilot AI Productivity Coach**. 🚀\n\nI've analyzed your Firestore workspace. You currently have **${tasks?.length || 0} tasks** loaded. What's the biggest bottleneck on your mind right now? Let's de-risk your day.`;
-    } else if (text.includes('deadline') || text.includes('due') || text.includes('tomorrow')) {
-      const urgentTasks = tasks?.filter((t: any) => !t.completed && t.priority === 'high') || [];
-      if (urgentTasks.length > 0) {
-        reply = `I see you have **${urgentTasks.length} high-priority tasks** pending. \n\nMy recommendations:\n1. **Focus on: "${urgentTasks[0].title}"** first thing tomorrow. It carries the highest risk factor.\n2. Apply a **90-minute Deep Work sprint** (no phone, no Slack).\n3. Delegate or reschedule minor activities to free up bandwidth. Let me know if you want me to write a schedule block for this!`;
-      } else {
-        reply = `You don't have any pressing high-priority deadlines for tomorrow! This is a perfect window to batch smaller operational tasks or invest in creative strategic work. What would you like to plan?`;
-      }
-    } else if (text.includes('burnout') || text.includes('tired') || text.includes('overwhelmed')) {
-      reply = `I hear you. Workload fatigue is a leading productivity killer. Let's practice **Workload Defense**:\n\n*   **Step 1**: Freeze all low-priority tasks today. Only look at high-priority items.\n*   **Step 2**: Reduce task estimates by 20% or extend deadlines by 24 hours where safe.\n*   **Step 3**: Introduce a strict "shutdown ritual" at 6 PM. No screens after that.\n\nWould you like me to reschedule your day to create more recovery periods?`;
-    } else {
-      reply = `That's an excellent point. Looking at your current task registry with **${tasks?.length || 0} active items**, the best course of action is to align tasks into dedicated focus categories.\n\nHere is a quick sprint tactic:\n*   **Batching**: Group similar cognitive tasks together.\n*   **Urgency Sorting**: Execute "${tasks?.[0]?.title || 'your first task'}" as an anchor milestone.\n\nTell me more about how you want to tackle this, or ask me to "Generate a Smart Plan" on the Planner tab!`;
-    }
-
-    return res.json({
-      text: `*(Simulated Coach Mode)*\n\n${reply}`
+  } catch (apiError: any) {
+    console.error('All Gemini API attempts failed:', apiError);
+    return res.status(500).json({
+      error: `Gemini API connection failed after retry: ${apiError?.message || apiError}`
     });
   }
 });

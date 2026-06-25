@@ -37,6 +37,7 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
   const [deadline, setDeadline] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [estimatedHours, setEstimatedHours] = useState<number>(2);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Open modal for creating a new task
   const handleNewTaskClick = () => {
@@ -46,6 +47,7 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
     setDeadline(new Date().toISOString().split('T')[0]);
     setPriority('medium');
     setEstimatedHours(2);
+    setFormError(null);
     setIsModalOpen(true);
   };
 
@@ -57,19 +59,58 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
     setDeadline(task.deadline);
     setPriority(task.priority);
     setEstimatedHours(task.estimatedHours);
+    setFormError(null);
     setIsModalOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !deadline) return;
+    setFormError(null);
+
+    if (!title.trim()) {
+      setFormError("Task title is required.");
+      return;
+    }
+
+    if (!deadline) {
+      setFormError("Deadline is required.");
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (deadline < todayStr && !editingTask) {
+      setFormError("Deadline cannot be in the past.");
+      return;
+    }
+
+    const hours = Number(estimatedHours);
+    if (isNaN(hours) || hours <= 0) {
+      setFormError("Estimated hours must be a positive number greater than 0.");
+      return;
+    }
+
+    if (hours > 100) {
+      setFormError("Estimated hours cannot exceed 100 hours per single task block.");
+      return;
+    }
+
+    // Check for duplicate task titles (to avoid duplicate clicks or entries)
+    const isDuplicate = tasks.some(t => 
+      t.title.trim().toLowerCase() === title.trim().toLowerCase() && 
+      (!editingTask || t.id !== editingTask.id)
+    );
+
+    if (isDuplicate) {
+      setFormError("A task with this title already exists in your registry.");
+      return;
+    }
 
     const taskData = {
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       deadline,
       priority,
-      estimatedHours: Number(estimatedHours) || 1,
+      estimatedHours: hours,
       completed: editingTask ? editingTask.completed : false,
     };
 
@@ -386,6 +427,13 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
                   ))}
                 </div>
               </div>
+
+              {formError && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-center space-x-2 text-rose-400 text-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
 
               {/* Buttons */}
               <div className="pt-3 border-t border-[#27272A] flex items-center justify-end space-x-3">

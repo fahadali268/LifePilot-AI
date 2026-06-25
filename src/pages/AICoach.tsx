@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db, DEFAULT_USER_ID } from '../firebase/config';
+import Markdown from '../components/Markdown';
 
 interface AICoachProps {
   tasks: Task[];
@@ -174,12 +175,12 @@ export default function AICoach({ tasks }: AICoachProps) {
               </div>
 
               {/* Message Bubble */}
-              <div className={`rounded-2xl p-4 border text-xs leading-relaxed space-y-2 whitespace-pre-line shadow-lg ${
+              <div className={`rounded-2xl p-4 border text-xs leading-relaxed space-y-2 shadow-lg ${
                 isAI 
                   ? 'bg-[#18181B] border-[#27272A] text-zinc-200' 
                   : 'bg-zinc-800 border-zinc-700 text-white'
               }`}>
-                {msg.text}
+                {isAI ? <Markdown content={msg.text} /> : <div className="whitespace-pre-line">{msg.text}</div>}
               </div>
             </div>
           );
