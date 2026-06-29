@@ -45,6 +45,11 @@ export default function Dashboard({ tasks, onAddTaskClick, onCompleteTask, setAc
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 3);
 
+  const focusTask = upcomingTasks[0];
+  const focusMessage = focusTask
+    ? `${focusTask.title} is the next highest-leverage move${focusTask.priority === 'high' ? ' and should be tackled first.' : ' for your current runway.'}`
+    : 'Your current queue is already in a healthy state. Keep the momentum moving.';
+
   // Recharts Chart Data (Priorities & Workload distribution)
   const priorityData = [
     { name: 'High', pending: tasks.filter(t => t.priority === 'high' && !t.completed).length, completed: tasks.filter(t => t.priority === 'high' && t.completed).length },
@@ -253,6 +258,15 @@ export default function Dashboard({ tasks, onAddTaskClick, onCompleteTask, setAc
                 <span className="text-[10px] text-zinc-600 mt-1">Ready for high-impact milestones</span>
               </div>
             )}
+          </div>
+
+          <div className="mt-4 rounded-xl border border-[#27272A] bg-[#18181B]/70 p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400">Focus Signal</span>
+              <span className="text-[10px] text-zinc-500">Next best move</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-white">{focusTask ? focusTask.title : 'Queue is clear'}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">{focusMessage}</p>
           </div>
 
           <button 

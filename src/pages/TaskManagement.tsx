@@ -26,6 +26,7 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | Priority>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'deadline' | 'priority' | 'created'>('deadline');
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,6 +124,12 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
     setIsModalOpen(false);
   };
 
+  const todayStart = new Date(new Date().toDateString()).getTime();
+
+  const getPriorityScore = (priority: Priority) => {
+    return priority === 'high' ? 3 : priority === 'medium' ? 2 : 1;
+  };
+
   // Filter tasks based on status, priority and search queries
   const filteredTasks = tasks.filter(task => {
     const matchesStatus = 
@@ -139,6 +146,18 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
       task.description.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesStatus && matchesPriority && matchesSearch;
+  });
+
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    if (sortBy === 'priority') {
+      return getPriorityScore(b.priority) - getPriorityScore(a.priority);
+    }
+
+    if (sortBy === 'created') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
   });
 
   return (
@@ -209,6 +228,31 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
               <option value="low">Low</option>
             </select>
           </div>
+
+          <div className="flex items-center space-x-1">
+            <Calendar className="w-3 h-3 text-zinc-500" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'deadline' | 'priority' | 'created')}
+              className="bg-[#09090B] border border-[#27272A] hover:border-zinc-700 rounded-lg text-xs px-2.5 py-1.5 text-zinc-300 focus:outline-none focus:border-indigo-500 cursor-pointer font-mono"
+            >
+              <option value="deadline">Sort by Deadline</option>
+              <option value="priority">Sort by Priority</option>
+              <option value="created">Sort by Recent</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => {
+              setFilter('all');
+              setPriorityFilter('all');
+              setSearchQuery('');
+              setSortBy('deadline');
+            }}
+            className="px-2.5 py-1.5 rounded-lg text-xs font-medium font-mono border border-[#27272A] text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer"
+          >
+            Clear
+          </button>
         </div>
 
         {/* Search input */}
@@ -228,26 +272,41 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
 
       {/* Task Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map((task) => (
+        {sortedTasks.length > 0 ? (
+          sortedTasks.map((task) => {
+            const deadlineTimestamp = new Date(task.deadline).getTime();
+            const isOverdue = !task.completed && deadlineTimestamp < todayStart;
+
+            return (
             <div 
               key={task.id}
               className={`bg-[#09090B] border rounded-xl p-5 hover:border-zinc-700 transition-all duration-300 flex flex-col justify-between ${
-                task.completed ? 'border-emerald-500/20 bg-[#18181B]/70' : 'border-[#27272A]'
+                task.completed
+                  ? 'border-emerald-500/20 bg-[#18181B]/70'
+                  : isOverdue
+                    ? 'border-rose-500/30 bg-rose-500/5'
+                    : 'border-[#27272A]'
               }`}
             >
               <div>
                 {/* Header: Priority & Action buttons */}
                 <div className="flex items-start justify-between gap-2">
-                  <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded uppercase border ${
-                    task.priority === 'high' 
-                      ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
-                      : task.priority === 'medium'
-                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                        : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                  }`}>
-                    {task.priority} Priority
-                  </span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded uppercase border ${
+                      task.priority === 'high' 
+                        ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
+                        : task.priority === 'medium'
+                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                    }`}>
+                      {task.priority} Priority
+                    </span>
+                    {isOverdue && (
+                      <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded uppercase border border-rose-500/20 bg-rose-500/10 text-rose-400">
+                        Overdue
+                      </span>
+                    )}
+                  </div>
                   
                   <div className="flex items-center space-x-1 shrink-0">
                     <button
@@ -314,7 +373,8 @@ export default function TaskManagement({ tasks, onAddTask, onUpdateTask, onDelet
                 </button>
               </div>
             </div>
-          ))
+            );
+          })
         ) : (
           <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-[#09090B] border border-[#27272A] rounded-xl p-12 text-center flex flex-col items-center justify-center">
             <BookOpen className="w-12 h-12 text-zinc-700 mb-3 animate-pulse" />

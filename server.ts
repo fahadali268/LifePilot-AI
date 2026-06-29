@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const DEFAULT_PORT = Number(process.env.PORT || 3000);
 
 app.use(express.json());
 
@@ -30,6 +30,19 @@ const getGeminiClient = (): GoogleGenAI => {
     });
   }
   return aiClient;
+};
+
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs);
+    promise.then((value) => {
+      clearTimeout(timer);
+      resolve(value);
+    }).catch((error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
 };
 
 // Helper to clean JSON response from Gemini
@@ -60,11 +73,14 @@ async function generateContentWithRetry(
     while (attempts < 2) {
       try {
         console.log(`[Gemini API] Requesting ${model} (attempt ${attempts + 1})...`);
-        const response = await ai.models.generateContent({
-          model: model,
-          contents: contents,
-          config: systemInstruction ? { systemInstruction } : undefined,
-        });
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: model,
+            contents: contents,
+            config: systemInstruction ? { systemInstruction } : undefined,
+          }),
+          30000
+        );
         if (response && response.text) {
           return response.text;
         }
@@ -343,6 +359,22 @@ Provide helpful, structured Markdown responses. Keep answers concise, actionable
   }
 });
 
+function listenWithFallback(port: number, attempts = 6): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = app.listen(port, '0.0.0.0', () => resolve(port));
+
+    server.once('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE' && attempts > 1) {
+        console.warn(`Port ${port} is busy. Retrying on ${port + 1}...`);
+        server.close();
+        resolve(listenWithFallback(port + 1, attempts - 1));
+      } else {
+        reject(error);
+      }
+    });
+  });
+}
+
 // Setup Vite middleware for development
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
@@ -361,9 +393,13 @@ async function startServer() {
     console.log("Production static server configured.");
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 LifePilot AI server booting at http://localhost:${PORT}`);
-  });
+  try {
+    const activePort = await listenWithFallback(DEFAULT_PORT);
+    console.log(`🚀 LifePilot AI server booting at http://localhost:${activePort}`);
+  } catch (error) {
+    console.error('Unable to start the server:', error);
+    process.exit(1);
+  }
 }
 
 startServer();

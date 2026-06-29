@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   collection, 
   onSnapshot, 
@@ -85,11 +85,15 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const toastTimeoutRef = useRef<number | null>(null);
 
   // Quick notification dispatch helper
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    if (toastTimeoutRef.current) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
     setNotification({ message, type });
-    setTimeout(() => {
+    toastTimeoutRef.current = window.setTimeout(() => {
       setNotification(null);
     }, 4000);
   };
@@ -129,7 +133,12 @@ export default function App() {
       showToast("Sync failed: Check Firebase rules and connectivity.", "error");
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (toastTimeoutRef.current) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+    };
   }, []);
 
   // CRUD Trigger: Add Task

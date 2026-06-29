@@ -123,8 +123,12 @@ export default function AICoach({ tasks }: AICoachProps) {
         text: `Coaching registry cleared. Active tasks: **${tasks.length}**. What strategy shall we develop next?`,
         timestamp: new Date().toISOString()
       };
-      setMessages([welcome]);
-      await setDoc(doc(db, 'chat_history', DEFAULT_USER_ID), { messages: [welcome] });
+      try {
+        setMessages([welcome]);
+        await setDoc(doc(db, 'chat_history', DEFAULT_USER_ID), { messages: [welcome] });
+      } catch (e) {
+        setError('Unable to persist the cleared chat history right now.');
+      }
     }
   };
 
