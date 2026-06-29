@@ -1,20 +1,202 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# 🚀 LifePilot AI
 
-# Run and deploy your AI Studio app
+> Your AI-powered personal productivity and life management assistant.
 
-This contains everything you need to run your app locally.
+LifePilot AI is an intelligent productivity platform designed to help users organize their daily lives, manage tasks efficiently, and receive AI-powered insights for better decision-making. Instead of simply acting as a to-do list, LifePilot AI serves as a smart companion that understands your productivity patterns and helps you improve them.
 
-View your app in AI Studio: https://ai.studio/apps/4629e8d5-a4c9-4c6d-9e83-3830f858e65d
+---
 
-## Run Locally
+# ✨ Features
 
-**Prerequisites:**  Node.js
+- 🤖 AI-powered productivity assistant
+- 📋 Smart task management
+- 📅 Daily planning and scheduling
+- 📊 Productivity analytics and insights
+- 🎯 Goal tracking
+- ⏰ Task prioritization
+- 📈 Performance dashboard
+- 💡 AI-generated recommendations
+- 🌙 Modern responsive UI
+- 🔒 Secure authentication
+- ⚡ Fast and responsive experience
 
+---
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+# 🛠 Tech Stack
+
+### Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Shadcn UI
+- React Router
+
+### Backend
+
+- Node.js
+- Express.js
+
+### AI
+
+- Google Gemini API
+
+### Database
+
+- Firebase Firestore
+
+### Authentication
+
+- Firebase Authentication
+
+### Deployment
+
+- Google Cloud Run
+- Docker
+
+---
+
+# 📂 Project Structure
+
+```
+LifePilotAI/
+│
+├── client/
+│   ├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── hooks/
+│   └── assets/
+│
+├── server/
+│
+├── shared/
+│
+├── dist/
+│
+├── Dockerfile
+├── package.json
+└── README.md
+```
+
+---
+
+# 🚀 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/yourusername/LifePilotAI.git
+```
+
+Move into the project
+
+```bash
+cd LifePilotAI
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Create environment variables
+
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+FIREBASE_API_KEY=YOUR_FIREBASE_KEY
+```
+
+Run development server
+
+```bash
+npm run dev
+```
+
+Build production
+
+```bash
+npm run build
+```
+
+---
+
+# 💻 Running with Docker
+
+Build Docker image
+
+```bash
+docker build -t lifepilot-ai .
+```
+
+Run container
+
+```bash
+docker run -p 8080:8080 lifepilot-ai
+```
+
+---
+
+# 🎯 Future Improvements
+
+- AI habit tracking
+- Calendar synchronization
+- Email integration
+- Smart reminders
+- Voice assistant
+- Mobile application
+- Team collaboration
+- AI-generated weekly reports
+
+---
+
+# 📸 Screenshots
+
+> Add screenshots of your dashboard, task manager, AI assistant, analytics page, and mobile responsiveness here.
+
+---
+
+# 🌐 Deployment
+
+The application is containerized using Docker and deployed on **Google Cloud Run**, allowing scalable and reliable cloud hosting.
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a new feature branch
+3. Commit your changes
+4. Push to your branch
+5. Open a Pull Request
+
+---
+
+# 📜 License
+
+This project is licensed under the MIT License.
+
+---
+
+# 👨‍💻 Author
+
+**Fahad Ali**
+
+Computer Science Engineering Student
+
+Focused on:
+- AI Applications
+- Full Stack Development
+- Cloud Computing
+- Product Development
+- Open Source
+
+GitHub: https://github.com/fahadali268
+
+---
+
+⭐ If you found this project useful, consider giving it a star!
