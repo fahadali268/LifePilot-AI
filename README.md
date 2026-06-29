@@ -1,13 +1,17 @@
 # 🚀 LifePilot AI
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-success?style=for-the-badge)](https://lifepilot-ai-4945932753.asia-south1.run.app/)
-
-An AI-powered personal productivity and life management platform.
 > Your AI-powered personal productivity and life management assistant.
 
 LifePilot AI is an intelligent productivity platform designed to help users organize their daily lives, manage tasks efficiently, and receive AI-powered insights for better decision-making. Instead of simply acting as a to-do list, LifePilot AI serves as a smart companion that understands your productivity patterns and helps you improve them.
 
 ---
+
+## 🔗 Links
+
+- 🌐 **Live Demo:** https://lifepilot-ai-4945932753.asia-south1.run.app/
+- 💻 **Source Code:** https://github.com/fahadali268/LifePilot-AI
+---
+
 
 # ✨ Features
 
