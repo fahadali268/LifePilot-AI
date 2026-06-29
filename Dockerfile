@@ -26,7 +26,6 @@ COPY --from=base /app/index.html ./index.html
 COPY --from=base /app/vite.config.ts ./vite.config.ts
 COPY --from=base /app/tsconfig.json ./tsconfig.json
 COPY --from=base /app/metadata.json ./metadata.json
-COPY --from=base /app/assets ./assets
 COPY --from=base /app/firebase-applet-config.json ./firebase-applet-config.json
 COPY --from=base /app/firebase-blueprint.json ./firebase-blueprint.json
 COPY --from=base /app/firestore.rules ./firestore.rules
